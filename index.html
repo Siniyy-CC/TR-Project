@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《愛的藝術》影展入場券生成</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           核心配色与纹理定义 (CSS Variables)
+        ========================================= */
+        :root {
+            /* --- 默认观众主题 (Audience Theme) --- */
+            --theme-bg-color: #fdfbf7; /* 米白底色 */
+            --theme-bg-texture: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAD2Cz0MAAAADFBMVEUAAAD////8/Pz///+///+/AAAAAnRSTlP/AOW3MEoAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAnSURBVEiJ7dExAQAAAMKg9U9tCy+gAAAAAAAAAAAAAAAAAAAAvABzaAABFDm3GgAAAABJRU5ErkJggg=='); /* 轻微纸张颗粒纹理 */
+            
+            --theme-header-bg: #8E3535; /* 古典红 */
+            /* 观众版顶部：纯色无纹理，或者简单的渐变 */
+            --theme-header-texture: none; 
+
+            --theme-text-main: #1a1a1a; /* 主标题深黑 */
+            --theme-text-sub: #666; /* 副标题浅灰 */
+            --theme-accent: #8E3535; /* 强调色(名字/企划名) */
+            --theme-border: #ccc; /* 虚线颜色 */
+            --theme-admit-border: #999; /* Admit One边框 */
+            
+            --theme-shadow: rgba(0,0,0,0.6);
+        }
+
+        /* --- 导演主题覆写 (Director Theme Override) --- */
+        .director-mode {
+            --theme-bg-color: #1a1a1a; /* 深黑底色 */
+            /* 深色重磅纸张纹理 */
+            --theme-bg-texture: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyAQMAAAAk8RryAAAABlBMVEUAAAAAAAClZ7nPAAAAAnRSTlP/AOW3MEoAAAARElEQVQY02NggAJfMJRcQAAA4YAhAW6CCwAAAABJRU5ErkJggg==');
+
+            --theme-header-bg: #000; 
+            /* [修复] 使用 CSS 线性渐变制作金色条纹纹理，100% 兼容下载。*/
+            --theme-header-texture: repeating-linear-gradient(
+                135deg,
+                #b88a00,
+                #b88a00 2px,
+                #d4af37 2px,
+                #d4af37 4px
+            );
+
+            --theme-text-main: #d4af37; /* 香槟金 */
+            --theme-text-sub: #967c3a; /* 暗金 */
+            --theme-accent: #d4af37; /* 金色 */
+            --theme-border: #5c4d26; /* 暗金虚线 */
+            --theme-admit-border: #d4af37; /* 金色边框 */
+            
+            --theme-shadow: rgba(212, 175, 55, 0.3); /* 金色光晕阴影 */
+        }
+
+        /* =========================================
+           基础页面样式
+        ========================================= */
+        body {
+            background-color: #0a0a0a; /* 网页背景调得更黑一点，突出票根 */
+            color: #eee;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2, button, .controls p { 
+            font-family: 'Cinzel', serif;
+        }
+        h2 { margin-bottom: 10px; font-weight: 400; letter-spacing: 2px; }
+
+        .controls {
+            margin-bottom: 40px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background-color: #222;
+            
+            /* [修改] 字体颜色改为古典红，与边框一致 */
+            color: #8E3535; 
+            
+            width: 70%;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+            font-family: 'Noto Serif TC', serif;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* 选中时的边框颜色（保持古典红） */
+        input:focus { 
+            border-color: #8E3535; 
+            box-shadow: 0 0 10px rgba(142, 53, 53, 0.4);
+        }
+
+        button {
+            padding: 10px 30px;
+            background: linear-gradient(45deg, #8E3535, #a64444);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(142, 53, 53, 0.4);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(142, 53, 53, 0.6); }
+        
+        /* 导演模式下按钮也变金 */
+        .director-mode-active button {
+             background: linear-gradient(45deg, #d4af37, #f2d06b);
+             color: #000;
+             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* =========================================
+           票根核心样式 (应用变量)
+        ========================================= */
+        #ticket-container {
+            width: 320px; 
+            /* 应用背景色和纹理 */
+            background-color: var(--theme-bg-color);
+            background-image: var(--theme-bg-texture);
+            /* 混合模式让纹理更自然 */
+            background-blend-mode: multiply;
+            
+            color: var(--theme-text-main);
+            border-radius: 8px;
+            /* 阴影也跟随主题变色 */
+            box-shadow: 0 20px 40px var(--theme-shadow);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .ticket-header {
+            background-color: var(--theme-header-bg);
+            /* 应用Header纹理 */
+            background-image: var(--theme-header-texture);
+            height: 20px; /* 稍微增高以展示花纹 */
+            width: 100%;
+            transition: all 0.6s;
+        }
+
+        .ticket-body {
+            padding: 30px 25px 15px 25px;
+            text-align: center;
+            /* 虚线颜色跟随主题 */
+            border-bottom: 2px dashed var(--theme-border);
+            position: relative;
+            transition: border-color 0.6s;
+        }
+
+        .ticket-body::before, .ticket-body::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
+            height: 20px;
+            background-color: #0a0a0a; /* 必须和网页背景一致 */
+            border-radius: 50%;
+        }
+        .ticket-body::before { left: -10px; }
+        .ticket-body::after { right: -10px; }
+
+        .film-title {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 5px 0 10px 0;
+            letter-spacing: 3px;
+            color: var(--theme-text-main); /* 跟随主题 */
+            transition: color 0.6s;
+        }
+
+        .film-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--theme-text-sub); /* 跟随主题 */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            transition: color 0.6s;
+        }
+        
+        .starring {
+            font-family: 'Cinzel', serif;
+            font-size: 10px; 
+            color: var(--theme-text-sub); /* 跟随主题 */
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            transition: color 0.6s;
+        }
+
+        .project-note {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 10px;
+            color: var(--theme-accent); /* 跟随主题强调色 */
+            letter-spacing: 1px;
+            margin-top: 15px; 
+            opacity: 0.8;
+            transition: color 0.6s;
+        }
+
+        /* 导演彩蛋文字 */
+        .secret-message {
+            height: 0; /* 默认高度为0，实现平滑展开 */
+            overflow: hidden;
+            opacity: 0;
+            font-size: 11px;
+            color: var(--theme-accent);
+            font-family: 'Noto Serif TC', serif;
+            margin-top: 0;
+            letter-spacing: 2px;
+            font-weight: bold;
+            transition: all 0.6s;
+        }
+        
+        .director-mode .secret-message {
+            height: auto;
+            opacity: 1;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--theme-border);
+        }
+
+        .info-grid {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            color: var(--theme-text-sub); /* 跟随主题 */
+            margin-top: 20px;
+            text-align: left;
+            transition: color 0.6s;
+        }
+
+        .info-item span {
+            display: block;
+            font-weight: 700;
+            color: var(--theme-text-main); /* 跟随主题 */
+            font-size: 14px;
+            margin-top: 2px;
+            font-family: 'Helvetica Neue', sans-serif;
+            transition: color 0.6s;
+        }
+
+        .ticket-stub {
+            padding: 15px 25px;
+            /* 背景色跟随主题 */
+            background-color: var(--theme-bg-color);
+            background-image: var(--theme-bg-texture);
+            background-blend-mode: multiply;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.6s;
+        }
+
+        .guest-name {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--theme-accent); /* 跟随主题强调色 */
+            text-transform: uppercase;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.6s;
+        }
+
+        .admit-one {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            color: var(--theme-text-sub);
+            letter-spacing: 1px;
+            border: 1px solid var(--theme-text-sub); /* 边框跟随副标题色 */
+            padding: 3px 6px;
+            transition: all 0.6s;
+        }
+        /* 导演模式下 Admit One 更醒目 */
+        .director-mode .admit-one {
+             color: var(--theme-accent);
+             border-color: var(--theme-accent);
+             font-weight: bold;
+        }
+        
+        /* 条形码 */
+        .barcode {
+            height: 25px;
+            width: 100%;
+            /* 条形码纹理 */
+            background: linear-gradient(to right, currentColor 0%, currentColor 3%, transparent 3%, transparent 5%, currentColor 5%, currentColor 8%, transparent 8%, transparent 10%, currentColor 10%, currentColor 15%, transparent 15%, transparent 18%, currentColor 18%, currentColor 25%, transparent 25%, transparent 30%, currentColor 30%, currentColor 45%, transparent 45%, transparent 50%, currentColor 50%, currentColor 55%, transparent 55%, transparent 60%, currentColor 60%, currentColor 70%, transparent 70%, transparent 80%, currentColor 80%, currentColor 100%);
+            margin-top: 15px;
+            opacity: 0.6;
+            color: #000; /* 默认黑色 */
+            transition: color 0.6s;
+        }
+        .director-mode .barcode {
+            color: var(--theme-text-sub); /* 导演模式变暗金色 */
+            opacity: 0.8;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            font-family: 'Cinzel', serif;
+        }
+
+    </style>
+</head>
+<body id="main-body">
+
+    <div class="controls">
+        <h2>ARS AMATORIA</h2>
+        <p style="font-size: 12px; color: #999; margin-bottom: 15px;">Please enter your name to retrieve ticket</p>
+        <input type="text" id="nameInput" placeholder="..." maxlength="25">
+        <br>
+        <button onclick="downloadTicket()" id="dl-btn">GET TICKET</button>
+    </div>
+
+    <div id="ticket-container">
+        <div class="ticket-header"></div>
+        <div class="ticket-body">
+            <div class="film-subtitle">Ars Amatoria</div>
+            <div class="film-title">《愛的藝術》</div>
+            
+            <div class="starring">STARRING: NoFear × QingRong</div>
+            
+            <div class="barcode"></div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    DATE
+                    <span id="ticket-date">DEC 24</span>
+                </div>
+                <div class="info-item">
+                    TIME
+                    <span id="ticket-time">18:00</span>
+                </div>
+                <div class="info-item">
+                    SEAT
+                    <span id="seat-type">VIP</span>
+                </div>
+            </div>
+
+            <div class="project-note">桃絨2025聖誕企劃</div>
+            
+            <div class="secret-message">
+                — 感謝您構建了這個世界 —
+            </div>
+        </div>
+        
+        <div class="ticket-stub">
+            <div>
+                <div style="font-size: 9px; color: var(--theme-text-sub); font-family:'Cinzel',serif; transition: color 0.6s;" id="role-label">GUEST</div>
+                <div class="guest-name" id="display-name">AUDIENCE</div>
+            </div>
+            <div class="admit-one">ADMIT ONE</div>
+        </div>
+    </div>
+
+    <div class="footer-note">Created for NoFear × QingRong</div>
+
+    <script>
+        // 🔥 这里是所有老师的时间表 🔥
+        // 左边是ID（不区分大小写），右边是时间
+        const scheduleData = {
+            "1cho": { date: "DEC 24", time: "18:00" },
+            "如果要让我来讲这个故事": { date: "DEC 24", time: "20:00" },
+            "祚": { date: "DEC 24", time: "22:00" },
+            "這壹片珎珠海": { date: "DEC 24", time: "24:00" },
+            "雪梨": { date: "DEC 25", time: "08:00" },
+            "palpitate_51": { date: "DEC 25", time: "10:00" },
+            "debrisoo": { date: "DEC 25", time: "12:00" },
+            "蔓越莓脆曲奇": { date: "DEC 25", time: "14:00" },
+            "过世路粉": { date: "DEC 25", time: "16:00" },
+            "aristolight": { date: "DEC 25", time: "18:00" }
+        };
+
+        const nameInput = document.getElementById('nameInput');
+        const displayName = document.getElementById('display-name');
+        const ticketContainer = document.getElementById('ticket-container');
+        const roleLabel = document.getElementById('role-label');
+        const seatType = document.getElementById('seat-type');
+        const mainBody = document.getElementById('main-body');
+        
+        const dateEl = document.getElementById('ticket-date');
+        const timeEl = document.getElementById('ticket-time');
+
+        nameInput.addEventListener('input', function() {
+            const inputVal = this.value.trim();
+            const inputKey = inputVal.toLowerCase();
+            
+            if (inputVal === "") {
+                displayName.innerText = "AUDIENCE";
+            } else {
+                displayName.innerText = inputVal;
+            }
+
+            if (scheduleData[inputKey]) {
+                // === 命中老师 ID ===
+                ticketContainer.classList.add('director-mode');
+                mainBody.classList.add('director-mode-active');
+                
+                roleLabel.innerText = "DIRECTOR";
+                seatType.innerText = "CREW";
+
+                dateEl.innerText = scheduleData[inputKey].date;
+                timeEl.innerText = scheduleData[inputKey].time;
+
+            } else {
+                // === 普通观众 ===
+                ticketContainer.classList.remove('director-mode');
+                mainBody.classList.remove('director-mode-active');
+                
+                roleLabel.innerText = "GUEST";
+                seatType.innerText = "VIP";
+
+                dateEl.innerText = "DEC 24";
+                timeEl.innerText = "18:00";
+            }
+        });
+
+        function downloadTicket() {
+            const ticket = document.getElementById("ticket-container");
+            const originalShadow = ticket.style.boxShadow;
+            ticket.style.boxShadow = 'none'; // 去掉阴影避免截图黑边
+
+            html2canvas(ticket, {
+                scale: 3, 
+                backgroundColor: null, 
+                useCORS: true,
+                allowTaint: true // 允许跨域图片渲染
+            }).then(canvas => {
+                ticket.style.boxShadow = originalShadow; // 恢复阴影
+                const link = document.createElement('a');
+                link.download = 'Ars_Amatoria_Ticket.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            }).catch(err => {
+                // 如果还是失败，弹出提示
+                alert("抱歉，自动下载失败。请直接使用手机截图功能保存票根。");
+                ticket.style.boxShadow = originalShadow;
+            });
+        }
+    </script>
+</body>
+</html>
