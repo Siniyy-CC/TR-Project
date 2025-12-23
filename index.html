@@ -16,6 +16,7 @@
         :root {
             /* --- 默认观众主题 (米白紅) --- */
             --theme-bg-color: #fdfbf7;
+            /* 通用复古纸张纹理 (PNG格式，安全稳定) */
             --theme-bg-texture: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAD2Cz0MAAAADFBMVEUAAAD////8/Pz///+///+/AAAAAnRSTlP/AOW3MEoAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAnSURBVEiJ7dExAQAAAMKg9U9tCy+gAAAAAAAAAAAAAAAAAAAAvABzaAABFDm3GgAAAABJRU5ErkJggg==');
             --theme-bg-blend: multiply;
             --theme-header-bg: #8E3535;
@@ -26,7 +27,6 @@
             --theme-border: #ccc;
             --theme-shadow: rgba(0,0,0,0.6);
             --theme-barcode-opacity: 0.6;
-            /* 【新增】弹窗提示文字默认颜色 */
             --modal-tip-color: #8E3535; 
         }
 
@@ -43,35 +43,30 @@
             --theme-shadow: rgba(212, 175, 55, 0.3);
             --theme-barcode-opacity: 0.8;
         }
-        /* 导演模式激活时，修改弹窗提示色变量 */
-        body.director-active { 
-            background-color: #000;
-            --modal-tip-color: #d4af37; 
-        }
+        body.director-active { background-color: #000; --modal-tip-color: #d4af37; }
 
-        /* --- 【升级版】恋人主题 (复古深粉 + 愛心暗紋) --- */
+        /* --- 【稳定版】恋人主题 (复古深粉 + 安全纸纹) --- */
         [data-theme="lover"] {
-            --theme-bg-color: #f2dcdc; /* 更深的復古胭脂粉底色 */
-            /* 使用 SVG 製作復古愛心圖案背景 */
-            --theme-bg-texture: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 34.5l-2.45-2.23C9.4 24.65 4 19.6 4 13.4 4 8.85 7.5 5 12 5c2.55 0 4.95 1.25 6.5 3.25C20.05 6.25 22.45 5 25 5c4.5 0 8 3.85 8 8.4 0 6.2-5.4 11.25-13.55 18.87L20 34.5z' fill='%23c48b9f' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
-            --theme-bg-blend: multiply; /* 正片疊底，讓愛心紋理融入粉色背景 */
-
-            --theme-header-bg: #a65f73; /* 深玫瑰紅頭部 */
-            --theme-header-texture: none; /* 保持乾淨，或者也可以加條紋 */
-
-            --theme-text-main: #6d2e3d; /* 深酒紅文字 */
-            --theme-text-sub: #a67b85;  /* 柔和的粉棕副標題 */
-            --theme-accent: #6d2e3d;    /* 強調色同主色 */
-            --theme-border: #c48b9f;    /* 玫瑰粉虛線 */
+            /* 1. 使用你喜欢的复古胭脂粉底色 */
+            --theme-bg-color: #f2dcdc; 
             
-            --theme-shadow: rgba(166, 95, 115, 0.5); /* 深粉色光暈 */
+            /* 2. 【关键修改】移除SVG，改用和默认主题一样的PNG纸纹 */
+            /* 这样既保留了复古质感，又绝对不会报错 */
+            --theme-bg-texture: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAD2Cz0MAAAADFBMVEUAAAD////8/Pz///+///+/AAAAAnRSTlP/AOW3MEoAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAnSURBVEiJ7dExAQAAAMKg9U9tCy+gAAAAAAAAAAAAAAAAAAAAvABzaAABFDm3GgAAAABJRU5ErkJggg==');
+            --theme-bg-blend: multiply; 
+
+            --theme-header-bg: #a65f73;
+            --theme-header-texture: none;
+
+            --theme-text-main: #6d2e3d; 
+            --theme-text-sub: #a67b85;  
+            --theme-accent: #6d2e3d;    
+            --theme-border: #c48b9f;    
+            
+            --theme-shadow: rgba(166, 95, 115, 0.5); 
             --theme-barcode-opacity: 0.7;
         }
-        /* 恋人模式激活时，修改背景和弹窗提示色变量 */
-        body.lover-active { 
-            background-color: #2a1b1e; /* 微紅的深黑背景 */
-            --modal-tip-color: #c48b9f; /* 設置彈窗文字為粉色 */
-        }
+        body.lover-active { background-color: #2a1b1e; --modal-tip-color: #c48b9f; }
 
         /* =========================================
            基础样式
@@ -144,8 +139,7 @@
         #ticket-container {
             width: 320px; 
             background-color: var(--theme-bg-color);
-            /* 確保背景圖案重複 */
-            background-repeat: repeat; 
+            background-repeat: repeat; /* 确保纹理重复 */
             background-image: var(--theme-bg-texture);
             background-blend-mode: var(--theme-bg-blend);
             color: var(--theme-text-main);
@@ -215,7 +209,6 @@
             z-index: 9999;
             display: none; /* 默认隐藏 */
             flex-direction: column; align-items: center; justify-content: center;
-            /* 添加淡入动画 */
             animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -224,13 +217,11 @@
             max-width: 85%; max-height: 75vh;
             border-radius: 8px;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            /* 确保图片本身没有点击事件阻挡长按 */
             pointer-events: auto; 
-            -webkit-user-select: none; /* iOS Safari 优化 */
+            -webkit-user-select: none;
         }
         .modal-tip {
-            /* 【核心修改】使用变量控制颜色 */
-            color: var(--modal-tip-color); 
+            color: var(--modal-tip-color); /* 跟随主题变色 */
             font-family: 'Noto Serif TC', serif; margin-top: 25px; font-size: 15px; letter-spacing: 2px; font-weight: bold;
             animation: pulse 2s infinite;
             transition: color 0.5s ease;
@@ -280,13 +271,14 @@
 
     <div class="closing-statement">
         <p>—— 帷幕落下 ——</p>
-        <p>感謝蒞臨《Ars Amatoria》特別展映。</p>
-        <p>請收好您的入場券，它是通往回憶的唯一憑證。</p>
+        <p>感謝蒞臨《愛的藝術》桃絨影展。</p>
+        <p>請收好您的入場券，它是通往本次聖誕回憶的唯一憑證。</p>
         <p style="margin-top: 20px; font-family: 'Cinzel', serif; letter-spacing: 2px;">FIN.</p>
     </div>
     <div class="footer-note">Created for NoFear × QingRong</div>
 
-    <div id="result-modal" onclick="closeModal()"> <img id="result-img" src="" alt="Ticket" onclick="event.stopPropagation()">
+    <div id="result-modal" onclick="closeModal()">
+        <img id="result-img" src="" alt="Ticket" onclick="event.stopPropagation()">
         <div class="modal-tip">請長按圖片保存至相冊</div>
         <div class="modal-close">×</div>
     </div>
@@ -304,8 +296,18 @@
             "过世路粉": { date: "DEC 25", time: "16:00" },
             "aristolight": { date: "DEC 25", time: "18:00" }
         };
-        // 💖 【重要】在这里填入触发粉色爱心皮肤的ID 💖
-        const loversList = ["yyyyq", "denny", "nofear", "qingrong", "apricot", "无畏", "清融", "杨涛", "黄垚钦",];
+        // 💖 记得在这里填入你的彩蛋 ID 💖
+        const loversList = ["yyyyq",
+            "denny",
+            "nofear",
+            "qingrong",
+            "rong",
+            "apricot",
+            "无畏",
+            "無畏",
+            "清融",
+            "杨涛",
+            "黄垚钦",]
 
         const nameInput = document.getElementById('nameInput');
         const displayName = document.getElementById('display-name');
@@ -353,7 +355,6 @@
         }
 
         function generateAndShow() {
-            // 显示加载中状态（可选，这里简单改变按钮文字）
             const btn = document.getElementById('dl-btn');
             const originalText = btn.innerText;
             btn.innerText = "GENERATING...";
@@ -363,7 +364,6 @@
             const originalShadow = ticket.style.boxShadow;
             ticket.style.boxShadow = 'none';
 
-            // 稍微延时以确保UI更新
             setTimeout(() => {
                 html2canvas(ticket, {
                     scale: 3, 
@@ -380,7 +380,7 @@
                     modal.style.display = 'flex';
                     
                 }).catch(err => {
-                    alert("生成失敗，請重試或直接截圖。");
+                    alert("生成失敗，請直接截圖。");
                     ticket.style.boxShadow = originalShadow;
                     btn.innerText = originalText;
                     btn.disabled = false;
@@ -390,7 +390,6 @@
 
         function closeModal() {
             modal.style.display = 'none';
-            // 清空图片，防止下次打开闪烁旧图
             setTimeout(() => { resultImg.src = ""; }, 200);
         }
     </script>
