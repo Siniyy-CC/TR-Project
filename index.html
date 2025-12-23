@@ -26,6 +26,8 @@
             --theme-border: #ccc;
             --theme-shadow: rgba(0,0,0,0.6);
             --theme-barcode-opacity: 0.6;
+            /* 【新增】弹窗提示文字默认颜色 */
+            --modal-tip-color: #8E3535; 
         }
 
         /* --- 导演主题 (黑金) --- */
@@ -41,19 +43,34 @@
             --theme-shadow: rgba(212, 175, 55, 0.3);
             --theme-barcode-opacity: 0.8;
         }
+        /* 导演模式激活时，修改弹窗提示色变量 */
+        body.director-active { 
+            background-color: #000;
+            --modal-tip-color: #d4af37; 
+        }
 
-        /* --- 恋人主题 (复古粉) --- */
+        /* --- 【升级版】恋人主题 (复古深粉 + 愛心暗紋) --- */
         [data-theme="lover"] {
-            --theme-bg-color: #faf0e6;
-            --theme-bg-texture: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEX////////////////////////////////////////////////////////////////////EtsMVAAAAEnRSTlP/AK0wEc8qIb5g00Q4t8d0sV588G8AAAEtSURBVFjD7dbbcoIwEAbgQ0sFEXGoVavW+v6v2okSpQ2EkM2c+b8H5k+yIWEP/4g6T/d7/Q559vW6m4D5dDqawOVwOIyA8/5wGIHlYf/Zgs3D7s9g/bBbgaVhvXgD1uL1YgRGi9WfweJi9QIsFqsfQGu+eAG25ouXN6A7XzwBnfniBWiL588X0BfPny9gK54/X8BOPG+/gK143n4Be/G8/QKu4m/gK96238BavG2/ga14234De/G2/QG+4m37A/zF2/YHjMVz+wOG4rm9AdfiuT0C1+K5PQL34rk9AorifXsETMW/wEw8t0fAXLxsj4CFCJ0Q9iJ0QjhI8AmRCRERQidEhIidEDkidh80IWInxIIInRALInRCLIfQCRERInZCRITQCRERInZCxI64iV+Ify9+AOo+91z37k7VAAAAAElFTkSuQmCC');
-            --theme-header-bg: #c48b9f;
-            --theme-header-texture: repeating-linear-gradient(135deg, rgba(184, 138, 0, 0.3), rgba(184, 138, 0, 0.3) 2px, rgba(212, 175, 55, 0.3) 2px, rgba(212, 175, 55, 0.3) 4px);
-            --theme-text-main: #7D3C4C;
-            --theme-text-sub: #a67b85;
-            --theme-accent: #7D3C4C;
-            --theme-border: #dcaab6;
-            --theme-shadow: rgba(196, 139, 159, 0.4);
+            --theme-bg-color: #f2dcdc; /* 更深的復古胭脂粉底色 */
+            /* 使用 SVG 製作復古愛心圖案背景 */
+            --theme-bg-texture: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 34.5l-2.45-2.23C9.4 24.65 4 19.6 4 13.4 4 8.85 7.5 5 12 5c2.55 0 4.95 1.25 6.5 3.25C20.05 6.25 22.45 5 25 5c4.5 0 8 3.85 8 8.4 0 6.2-5.4 11.25-13.55 18.87L20 34.5z' fill='%23c48b9f' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
+            --theme-bg-blend: multiply; /* 正片疊底，讓愛心紋理融入粉色背景 */
+
+            --theme-header-bg: #a65f73; /* 深玫瑰紅頭部 */
+            --theme-header-texture: none; /* 保持乾淨，或者也可以加條紋 */
+
+            --theme-text-main: #6d2e3d; /* 深酒紅文字 */
+            --theme-text-sub: #a67b85;  /* 柔和的粉棕副標題 */
+            --theme-accent: #6d2e3d;    /* 強調色同主色 */
+            --theme-border: #c48b9f;    /* 玫瑰粉虛線 */
+            
+            --theme-shadow: rgba(166, 95, 115, 0.5); /* 深粉色光暈 */
             --theme-barcode-opacity: 0.7;
+        }
+        /* 恋人模式激活时，修改背景和弹窗提示色变量 */
+        body.lover-active { 
+            background-color: #2a1b1e; /* 微紅的深黑背景 */
+            --modal-tip-color: #c48b9f; /* 設置彈窗文字為粉色 */
         }
 
         /* =========================================
@@ -73,9 +90,6 @@
             transition: background-color 0.5s ease;
         }
         
-        body.director-active { background-color: #000; }
-        body.lover-active { background-color: #1a0f11; }
-
         h2, button, .controls p { font-family: 'Cinzel', serif; }
         h2 { margin-bottom: 10px; font-weight: 400; letter-spacing: 2px; }
 
@@ -130,6 +144,8 @@
         #ticket-container {
             width: 320px; 
             background-color: var(--theme-bg-color);
+            /* 確保背景圖案重複 */
+            background-repeat: repeat; 
             background-image: var(--theme-bg-texture);
             background-blend-mode: var(--theme-bg-blend);
             color: var(--theme-text-main);
@@ -162,7 +178,7 @@
         .ticket-body::before { left: -10px; }
         .ticket-body::after { right: -10px; }
         body.director-active .ticket-body::before, body.director-active .ticket-body::after { background-color: #000; }
-        body.lover-active .ticket-body::before, body.lover-active .ticket-body::after { background-color: #1a0f11; }
+        body.lover-active .ticket-body::before, body.lover-active .ticket-body::after { background-color: #2a1b1e; }
 
         .film-title { font-family: 'Noto Serif TC', serif; font-size: 28px; font-weight: 700; margin: 5px 0 10px 0; letter-spacing: 3px; color: var(--theme-text-main); transition: color 0.6s; }
         .film-subtitle { font-family: 'Cinzel', serif; font-size: 14px; color: var(--theme-text-sub); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; font-weight: 700; transition: color 0.6s; }
@@ -191,7 +207,7 @@
         .closing-statement { text-align: center; margin: 50px 20px; color: #888; font-family: 'Noto Serif TC', serif; font-size: 12px; line-height: 2; opacity: 0.8; }
 
         /* =========================================
-           【新增】长按保存弹窗样式
+           长按保存弹窗样式
         ========================================= */
         #result-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -199,22 +215,32 @@
             z-index: 9999;
             display: none; /* 默认隐藏 */
             flex-direction: column; align-items: center; justify-content: center;
+            /* 添加淡入动画 */
+            animation: fadeIn 0.3s ease-out;
         }
-        #result-modal img {
-            max-width: 90%; max-height: 80vh;
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #result-img {
+            max-width: 85%; max-height: 75vh;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            /* 确保图片本身没有点击事件阻挡长按 */
+            pointer-events: auto; 
+            -webkit-user-select: none; /* iOS Safari 优化 */
         }
         .modal-tip {
-            color: #d4af37; font-family: 'Noto Serif TC', serif; margin-top: 20px; font-size: 14px; letter-spacing: 2px;
+            /* 【核心修改】使用变量控制颜色 */
+            color: var(--modal-tip-color); 
+            font-family: 'Noto Serif TC', serif; margin-top: 25px; font-size: 15px; letter-spacing: 2px; font-weight: bold;
             animation: pulse 2s infinite;
+            transition: color 0.5s ease;
         }
         .modal-close {
-            position: absolute; top: 20px; right: 20px;
-            color: #fff; font-size: 30px; cursor: pointer;
-            font-family: Arial, sans-serif;
+            position: absolute; top: 30px; right: 30px;
+            color: rgba(255,255,255,0.6); font-size: 30px; cursor: pointer;
+            font-family: Arial, sans-serif; padding: 10px;
         }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
     </style>
 </head>
@@ -260,10 +286,9 @@
     </div>
     <div class="footer-note">Created for NoFear × QingRong</div>
 
-    <div id="result-modal">
-        <div class="modal-close" onclick="closeModal()">×</div>
-        <img id="result-img" src="" alt="Ticket">
+    <div id="result-modal" onclick="closeModal()"> <img id="result-img" src="" alt="Ticket" onclick="event.stopPropagation()">
         <div class="modal-tip">請長按圖片保存至相冊</div>
+        <div class="modal-close">×</div>
     </div>
 
     <script>
@@ -279,7 +304,8 @@
             "过世路粉": { date: "DEC 25", time: "16:00" },
             "aristolight": { date: "DEC 25", time: "18:00" }
         };
-        const loversList = ["yyyyq", "apricot", "denny", "nofear", "qingrong", "杨涛", "黄垚钦", "清融", "无畏"];
+        // 💖 【重要】在这里填入触发粉色爱心皮肤的ID 💖
+        const loversList = ["yyyyq", "denny", "nofear", "qingrong", "apricot", "无畏", "清融", "杨涛", "黄垚钦",];
 
         const nameInput = document.getElementById('nameInput');
         const displayName = document.getElementById('display-name');
@@ -291,7 +317,6 @@
         const timeEl = document.getElementById('ticket-time');
         const secretMsgText = document.getElementById('secret-msg-text');
         
-        // 弹窗相关元素
         const modal = document.getElementById('result-modal');
         const resultImg = document.getElementById('result-img');
 
@@ -327,36 +352,46 @@
             else if (theme === 'lover') { mainBody.classList.add('lover-active'); }
         }
 
-        // 修改后的生成函数：不下载，直接展示
         function generateAndShow() {
+            // 显示加载中状态（可选，这里简单改变按钮文字）
+            const btn = document.getElementById('dl-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "GENERATING...";
+            btn.disabled = true;
+
             const ticket = document.getElementById("ticket-container");
             const originalShadow = ticket.style.boxShadow;
-            ticket.style.boxShadow = 'none'; // 去掉阴影避免边缘黑边
+            ticket.style.boxShadow = 'none';
 
-            html2canvas(ticket, {
-                scale: 3, 
-                backgroundColor: null, 
-                useCORS: true,
-                allowTaint: true 
-            }).then(canvas => {
-                ticket.style.boxShadow = originalShadow; // 恢复阴影
-                
-                // 将画布转为图片URL
-                const imgData = canvas.toDataURL("image/png");
-                
-                // 显示在弹窗里
-                resultImg.src = imgData;
-                modal.style.display = 'flex';
-                
-            }).catch(err => {
-                alert("生成失敗，請重試或直接截圖。");
-                ticket.style.boxShadow = originalShadow;
-            });
+            // 稍微延时以确保UI更新
+            setTimeout(() => {
+                html2canvas(ticket, {
+                    scale: 3, 
+                    backgroundColor: null, 
+                    useCORS: true,
+                    allowTaint: true 
+                }).then(canvas => {
+                    ticket.style.boxShadow = originalShadow;
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    
+                    const imgData = canvas.toDataURL("image/png");
+                    resultImg.src = imgData;
+                    modal.style.display = 'flex';
+                    
+                }).catch(err => {
+                    alert("生成失敗，請重試或直接截圖。");
+                    ticket.style.boxShadow = originalShadow;
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
+            }, 100);
         }
 
-        // 关闭弹窗
         function closeModal() {
             modal.style.display = 'none';
+            // 清空图片，防止下次打开闪烁旧图
+            setTimeout(() => { resultImg.src = ""; }, 200);
         }
     </script>
 </body>
